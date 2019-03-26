@@ -12,7 +12,7 @@ class Block:
     def __init__(self, x, y):
         self.active = True
         self.x = x
-        self.y = y
+        self.y = y;
 
     def destroy(self):
         self.active = False
