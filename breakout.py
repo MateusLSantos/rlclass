@@ -127,7 +127,7 @@ def checkBarCollision():
 
 def checkFault():
     if ball.y == 0:
-        print("Game Over!")
+        #print("Game Over!")
         global score
         score -= 100000
         return True
@@ -257,11 +257,14 @@ class QLearn:
                 for x2 in range(field_x+1):
                     self.q[(x1, y1, x2)] = [0, 0, 0]
 
+field_x = 8;
+field_y = 6;
+qL = QLearn(0.1, 0.6, 0.2)
+qL.buildStates(field_x, field_y)
 
-for n in range(200):
+for n in range(50000):
+    print(n)
     #Variáveis do Campo
-    field_x = 20;
-    field_y = 10;
     score = 0;
 
     ball = Ball()
@@ -272,10 +275,83 @@ for n in range(200):
 
     
     generateField(80,2)
-    qL = QLearn(0.1, 0.3, 0.3)
-    qL.buildStates(field_x, field_y)
+
+    for n in range(500):
+        if len(blocks) == 0:
+            print("Parabéns, você venceu!")
+            break
+            score += 1000
+        #time.sleep(0.1)
+        #print('\n'*100)
+        #printGame()
+
+        state = (ball.x, ball.y, bar.x)
+        action = qL.chooseAction(state)
+        #print(action)
+        bar.move(action)
+        old_score = score
+        nextState = (0, 0, 0);
+        
+        if ball.directionX and ball.directionY:
+            nextState = (ball.x + 1, ball.y + 1, bar.x)
+        elif ball.directionX and not ball.directionY:
+            nextState = (ball.x + 1, ball.y - 1, bar.x)
+        elif not ball.directionX and ball.directionY:
+            nextState = (ball.x - 1, ball.y + 1, bar.x)
+        else:
+            nextState = (ball.x - 1, ball.y - 1, bar.x)
+
+        tempNextState = [0,0,0]
+
+        if nextState[0] > field_x:
+            tempNextState[0] = field_x
+        elif nextState[0] < 0:
+            tempNextState[0] = 0
+        else:
+            tempNextState[0] = nextState[0]
+        
+        if nextState[1] > field_y:
+            tempNextState[1] = field_y
+        elif nextState[1] < 0:
+            tempNextState[1] = 0
+        else:
+            tempNextState[1] = nextState[1]
+
+        if nextState[2] > field_x:
+            tempNextState[2] = field_x
+        elif nextState[2] < 0:
+            tempNextState[2] = 0
+        else:
+            tempNextState[2] = nextState[2]
+
+        nextState = tuple(tempNextState)
 
 
+        if not nextRound():
+            reward = -200
+            qL.learn(state, action, reward, nextState)
+            break
+        else:
+            reward = score - old_score
+            qL.learn(state, action, reward, nextState)
+            
+
+
+##########
+
+for n in range(10):
+    print(n)
+    #Variáveis do Campo
+    score = 0;
+
+    ball = Ball()
+    bar = Bar()
+    blocks = []
+    blocksDict = {}
+    checkCollisionWhen = 0;    #Altura a partir da qual o programa checará se haverá colisão com algum bloco
+
+    
+    generateField(24,0)
 
     for n in range(500):
         if len(blocks) == 0:
@@ -336,4 +412,5 @@ for n in range(200):
             reward = score - old_score
             qL.learn(state, action, reward, nextState)
             
+
 
